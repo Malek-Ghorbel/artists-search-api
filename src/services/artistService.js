@@ -3,8 +3,6 @@ const fs = require('fs');
 const csvWriterCreator = require('csv-writer').createObjectCsvWriter;
 const constants = require('../utils/constants/constants');
 
-require("dotenv").config();
-
 /**
  * Fetch artist data from the Last.fm API.
  * @param {string} artistName - Name of the artist to search for.

@@ -3,7 +3,7 @@ const artistController=require("../controllers/artistController");
 const router = express.Router();
 
 // Route to search for artists and return results in the response
-router.get('/artist', artistController.searchArtist);
+router.get('/artist/search', artistController.searchArtist);
 
 // Route to search for artists and download results as a CSV file
 router.get('/artist/download', artistController.downloadArtistCSV);
