@@ -10,7 +10,7 @@ router.get('/artist/download', artistController.downloadArtistCSV);
 
 // Default route to provide a welcome message and instructions
 router.get('/', (req, res) => {
-  res.status(200).json({ message: "Welcome to the server. Available endpoints: GET /artist and GET /artist/download" });
+  res.status(200).json({ message: "Welcome to the server. Available endpoints: GET /artist/search and GET /artist/download" });
 });
 
 module.exports = router;
