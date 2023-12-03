@@ -8,10 +8,9 @@ require("dotenv").config();
 /**
  * Fetch artist data from the Last.fm API.
  * @param {string} artistName - Name of the artist to search for.
- * @param {number} limit - Limit of results per page.
- * @param {number} page - Page number.
- * @returns {Promise<object>} - Artist data from the Last.fm API.
- * @throws {Error} - If there's an error fetching artist data.
+ * @param {string} limit - Limit of results per page.
+ * @param {string} page - Page number.
+ * @returns {Promise<object>} - Artist data from the API.
  */
 async function fetchArtistData(artistName, limit, page) {
     const params = {
@@ -32,14 +31,16 @@ async function fetchArtistData(artistName, limit, page) {
 }
 
 /**
- * Perform a fallback search for an artist if the initial search returns no results.
+ * Search for an artist or returns a rondom one if the search result is empty.
  * @param {string} artistName - Name of the artist to search for.
  * @param {string} limit - Limit of results per page.
  * @param {string} page - Page number.
  * @returns {Promise<Array>} - Array of artist objects.
  */
-async function artistSearchFallback(artistName, limit = '300', page = '1') {
+async function searchArtistOrGetRandom(artistName, limit = '300', page = '1') {
     let data = await fetchArtistData(artistName, limit, page);
+
+    // Repeat until we have gathered a list of artists.
     while (data.results.artistmatches.artist.length === 0) {
         const randomName = await getRandomArtist();
         data = await fetchArtistData(randomName, limit, page);
@@ -48,10 +49,11 @@ async function artistSearchFallback(artistName, limit = '300', page = '1') {
 }
 
 /**
- * Get a random artist name from a locally stored file.
+ * Get a random artist name from the locally stored file.
  * @returns {Promise<string>} - Random artist name.
  */
 async function getRandomArtist() {
+    // if the file does not exist create it
     if (!fs.existsSync(constants.ARTISTS_JSON)) {
         await createRandomArtistFile();
     }
@@ -66,7 +68,7 @@ async function createRandomArtistFile() {
     const alphabet = "abcdefghijklmnopqrstuvwxyz";
     let artistNames = new Set();
 
-    for (let i = 0; i < 3; i++) {
+    while (artistNames.size === 0) {
         const letter = alphabet[Math.floor(Math.random() * alphabet.length)];
         const { results } = await fetchArtistData(letter);
         results.artistmatches.artist.forEach(artist => artistNames.add(artist.name));
@@ -80,7 +82,6 @@ async function createRandomArtistFile() {
  * @param {Array} artists - Array of artist objects.
  * @param {string} filename - Name of the CSV file.
  * @returns {Promise<string>} - Filename of the downloaded CSV file.
- * @throws {Error} - If there's an error writing to the CSV file.
  */
 async function downloadArtistCSV(artists, filename) {
     try {
@@ -113,7 +114,6 @@ async function downloadArtistCSV(artists, filename) {
 }
 
 module.exports = {
-    artistSearchFallback,
-    downloadArtistCSV,
-    createRandomArtistFile
+    searchArtistOrGetRandom,
+    downloadArtistCSV
 };

@@ -3,7 +3,7 @@ const artistRoutes = require('./routes/artistRoutes');
 const { notFoundHandler, errorHandler } = require('./middlewares/errorMiddleware');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 app.use(express.json());
 
@@ -16,8 +16,8 @@ app.use(notFoundHandler);
 // Use the errorHandler for handling other errors
 app.use(errorHandler);
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-module.exports = app;
+module.exports = server;

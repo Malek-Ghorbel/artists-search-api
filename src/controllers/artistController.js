@@ -1,9 +1,8 @@
 const artistService = require("../services/artistService");
-const { sendErrorResponse } = require("../helpers/controllerHelpers");
 const fs = require('fs');
 
 /**
- * Controller function to search for artists and handle the response.
+ * Search for artists and handle the response.
  * @param {object} req - Express request object.
  * @param {object} res - Express response object.
  * @param {boolean} download - Flag indicating whether to download as CSV.
@@ -14,45 +13,45 @@ async function handleArtistSearch(req, res, download = false) {
 
     // Validate required data
     if (!artist) {
-      sendErrorResponse(res, "Artist name is required", 400);
+      res.status(400).send({ error: "Artist name is required" });
       return;
     }
 
     // Fetch artist data from the service
     let artistData;
     try {
-      artistData = await artistService.artistSearchFallback(artist, limit, page);
+      artistData = await artistService.searchArtistOrGetRandom(artist, limit, page);
     } catch (error) {
-      sendErrorResponse(res, `Error occurred while fetching artist data: ${error.message}`);
+      res.status(500).send({ error: `Error while fetching artist data: ${error.message}` });
       return;
     }
 
     if (download) {
       const file_name = filename || "artists.csv";
-      const response = await artistService.downloadArtistCSV(artistData, file_name);
+      const createdFile = await artistService.downloadArtistCSV(artistData, file_name);
 
       // Set headers for the CSV response
       res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', `attachment; filename="${response}"`);
+      res.setHeader('Content-Disposition', `attachment; filename="${createdFile}"`);
 
       // Send the CSV file as a response
-      res.sendFile(response, { root: '.' }, (err) => {
+      res.sendFile(createdFile, { root: '.' }, (err) => {
         if (err) {
           console.error('Error sending file:', err);
         } else {
           // Delete the file after sending it
-          fs.unlink(response, unlinkErr => {
+          fs.unlink(createdFile, unlinkErr => {
             if (unlinkErr) console.error('Error deleting file:', unlinkErr);
           });
         }
       });
     } else {
-      // No download just return the data in the response body
+      // If no download just return the data in the response body
       res.status(200).json({ artistData });
     }
 
   } catch (error) {
-    sendErrorResponse(res, `Error occurred in the controller: ${error.message}`);
+    res.status(500).send({ error: `Error in the controller: ${error.message}` });
   }
 }
 
